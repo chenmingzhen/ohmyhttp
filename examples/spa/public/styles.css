@@ -1,0 +1,80 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: #222;
+  background: #fff;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+.shell {
+  width: min(760px, calc(100% - 40px));
+  margin: auto;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.brand {
+  color: #222;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+nav a {
+  margin-left: 18px;
+  color: #666;
+  text-decoration: none;
+}
+
+nav a[aria-current] { color: #087f5b; }
+
+main {
+  padding: 56px 0;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 36px;
+}
+
+.summary {
+  margin: 0;
+  color: #666;
+}
+
+.api-card {
+  margin-top: 40px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f7f7f7;
+}
+
+.api-card h2 { margin: 0 0 8px; font-size: 18px; }
+.api-card p { margin: 16px 0; }
+
+button {
+  padding: 8px 14px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+button:hover { background: #eee; }
+
+footer {
+  padding: 20px 0;
+  border-top: 1px solid #ddd;
+  color: #777;
+  font-size: 14px;
+}
+
+footer span { color: #222; }

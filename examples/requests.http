@@ -1,0 +1,174 @@
+@base = http://127.0.0.1:8080
+
+### JSON body + path 参数：登录成功
+POST {{base}}/tenants/1/login
+Content-Type: application/json
+
+{
+  "account": "demo",
+  "password": "password"
+}
+
+> {%
+    client.global.set("accessToken", response.body.token);
+%}
+
+### JSON 校验失败：password 太短，返回 application/json
+POST {{base}}/tenants/1/login
+Content-Type: application/json
+
+{
+  "account": "demo",
+  "password": "bad"
+}
+
+### 不支持的 Content-Type：解码阶段返回 415
+POST {{base}}/tenants/1/login
+Content-Type: text/plain
+
+hello
+
+### application/x-www-form-urlencoded 表单绑定
+POST {{base}}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&account=demo&password=password
+
+### form 表单跨字段校验失败
+POST {{base}}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&account=demo
+
+### 强类型响应外壳：status/header/Set-Cookie/body
+POST {{base}}/sessions
+Content-Type: application/json
+
+{
+  "account": "demo",
+  "password": "password"
+}
+
+### 嵌套 JSON 请求体：profile 来自 body，UserID 来自 header
+PATCH {{base}}/profile
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+X-User-ID: user-1
+
+{
+  "profile": {
+    "display_name": "Demo User",
+    "bio": "I like typed HTTP handlers."
+  }
+}
+
+### path + header + JSON body：创建报表
+POST {{base}}/tenants/1/reports
+Content-Type: application/json
+X-Client-Version: demo-client/1.0
+
+{
+  "name": "Monthly report",
+  "format": "csv"
+}
+
+### query slice：重复 tag 参数会绑定到 []string
+GET {{base}}/reports/search?status=queued&tag=finance&tag=monthly&page=1
+
+### 自定义字段校验 + 请求级校验
+POST {{base}}/users
+Content-Type: application/json
+
+{
+  "username": "demo_user",
+  "email": "demo@example.com",
+  "password": "password",
+  "confirm_password": "password"
+}
+
+### JWT 中间件 + Accept 内容协商
+GET {{base}}/profile?page=1&verbose=true
+Authorization: Bearer {{accessToken}}
+Accept: application/vnd.ohmyhttp.demo+json
+
+### Accept 不支持：返回 406
+GET {{base}}/profile?page=1
+Authorization: Bearer {{accessToken}}
+Accept: application/xml
+
+### Handler 返回业务错误：映射成 403
+GET {{base}}/admin
+Authorization: Bearer {{accessToken}}
+
+### 登录管理员账号并保存管理员 JWT
+POST {{base}}/tenants/1/login
+Content-Type: application/json
+
+{
+  "account": "admin",
+  "password": "password"
+}
+
+> {%
+    client.global.set("adminToken", response.body.token);
+%}
+
+### 管理员 JWT 通过角色检查
+GET {{base}}/admin
+Authorization: Bearer {{adminToken}}
+
+### 手动 ohmyhttp.Response + WithHeader
+GET {{base}}/reports/monthly/metadata
+
+### StackError：客户端收到通用 500，服务端日志包含错误产生位置的堆栈
+GET {{base}}/reports/failure/metadata
+
+### 业务错误：公开 code/message/details，返回 409
+GET {{base}}/errors/business
+
+### StackError：客户端只收到通用 500，服务端日志包含错误产生位置的堆栈
+GET {{base}}/errors/stack
+
+### 普通未知错误：客户端收到通用 500，但错误本身不包含调用堆栈
+GET {{base}}/errors/unknown
+
+### PanicError：Recovery 返回通用 500，服务端日志包含 panic 堆栈
+GET {{base}}/errors/panic
+
+### http.ErrAbortHandler：立即关闭连接，不返回 HTTP 响应，客户端会看到 EOF
+GET {{base}}/errors/abort
+
+### 文件下载
+GET {{base}}/reports/monthly/download
+
+### 重定向
+GET {{base}}/reports/monthly/redirect
+
+### 流式 CSV
+GET {{base}}/reports/monthly/export?rows=3
+
+### SSE
+GET {{base}}/events?count=3
+
+### 204 No Content
+DELETE {{base}}/reports/monthly
+
+### 静态目录浏览：返回由 staticDirectoryResponse 生成的 HTML 列表
+GET {{base}}/browse/
+
+### 领域错误：报表不存在，映射成 404 JSON 错误
+GET {{base}}/reports/missing/download
+
+### 底层框架原生 404，不进入 ohmyhttp 端点中间件
+GET {{base}}/not-found
+Authorization: Bearer {{accessToken}}
+
+### OpenAPI JSON
+GET {{base}}/openapi.json
+
+### OpenAPI schemas
+GET {{base}}/schemas
+
+### 单个 schema
+GET {{base}}/schemas?name=DemoUpdateProfileBody
+

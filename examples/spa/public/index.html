@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>ohmyhttp · SPA</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="/" data-link>ohmyhttp SPA Demo</a>
+      <nav aria-label="主导航">
+        <a href="/" data-link>首页</a>
+        <a href="/about" data-link>关于</a>
+      </nav>
+    </header>
+
+    <main>
+      <section>
+        <h1 id="title"></h1>
+        <p class="summary" id="summary"></p>
+      </section>
+
+      <section class="api-card" aria-live="polite">
+        <h2>API 请求</h2>
+        <code>GET /api/message</code>
+        <p id="api-result">正在连接后端 API…</p>
+        <button id="reload" type="button">重新请求</button>
+      </section>
+    </main>
+
+    <footer>
+      当前路由：<span id="route"></span>
+    </footer>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

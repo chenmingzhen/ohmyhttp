@@ -1,0 +1,3 @@
+Monthly Report
+
+This file is served by ohmyhttp.Attachment from the net/http demo.
