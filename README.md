@@ -1,6 +1,6 @@
 # ohmyhttp
 
-[Go Reference][go-reference] · [English](README_EN.md)
+[Go Reference][go-reference] · [文档](https://chenmingzhen.github.io/ohmyhttp/) · [English](README_EN.md)
 
 `ohmyhttp` 是一个直接构建在 Go `net/http` 之上的强类型 HTTP 应用框架。它保留标准库的路由和 Handler 生态，同时补齐请求绑定、校验、错误映射、响应编码与 OpenAPI。
 
