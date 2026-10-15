@@ -13,7 +13,7 @@
 | `ohmyhttp` | 应用、路由、绑定、校验、响应、错误、中间件、静态文件 |
 | `ohmyhttp/meta` | 路由元数据 |
 | `ohmyhttp/openapi` | 根据已注册端点生成 OpenAPI |
-| `ohmyhttp/errorx` | 为错误保存调用堆栈 |
+| `ohmyhttp/errorx` | 可选的服务端调用栈记录 |
 | `ohmyhttp/server` | 监听、超时和进程退出 |
 
 `examples/demo` 是一个可运行的程序，其中的鉴权和访问日志不是本库导出的 API。见 [示例](/reference/examples)。

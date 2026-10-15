@@ -53,7 +53,7 @@ func (APIResponseTransformer) TransformEndpointResponseType(
 
 ## 业务错误使用 HTTP 200
 
-有的接口希望传输成功时 HTTP 状态保持 200，业务成败放在 JSON 里。转换器可以在错误映射之后改状态码：
+有的接口希望传输成功时 HTTP 状态保持 200，业务成败放在 JSON 里。转换器可以在错误映射之后改状态码。下面的 `BusinessError` 让框架先生成业务错误响应，再统一改写成接口需要的格式：
 
 ```go
 type BusinessError struct {

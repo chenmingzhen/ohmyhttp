@@ -40,7 +40,7 @@ JWT 保护 `GET /profile`、`PATCH /profile` 和 `GET /admin`。登录和其他�
 - `GET /` 只匹配站点根路径，返回一段 HTML。`GET /api/v1/ping`、`/api/v1/hello.html`、`/api/v1/bytes` 在两级分组下，分别返回 JSON、HTML 和原始字节。
 - `GET /ws/echo` 是原生 Handler 上的 WebSocket 回显。
 - `GET /healthz` 返回 204，并且不进访问日志。
-- `GET /errors/business`、`/stack`、`/unknown`、`/panic`、`/abort` 分别对应公开错误、带堆栈的内部错误、普通未知错误、由 Recovery 恢复的 panic，以及中止连接。
+- `GET /errors/business`、`/stack`、`/unknown`、`/panic`、`/abort` 分别对应 `HTTPError`、带堆栈的内部错误、普通未知错误、由 Recovery 恢复的 panic，以及中止连接。
 - `GET /openapi.json`、`/openapi.yaml`、`/schemas`、`/docs` 提供文档。`/schemas` 可以用查询参数 `name` 取某一个组件。
 - `GET /assets/*` 是带一小时缓存的静态目录。`GET /browse/` 会列出目录。
 
@@ -50,7 +50,7 @@ JWT 保护 `GET /profile`、`PATCH /profile` 和 `GET /admin`。登录和其他�
 
 `go run ./examples/spa` 把前端嵌进二进制。`/api` 下找不到的路径返回 JSON，页面导航回退到 `index.html`，监听 `127.0.0.1:8081`。
 
-`go run ./examples/http200` 用响应转换把业务错误改成 HTTP 200，业务码放在 JSON 里，同样监听 `127.0.0.1:8081`。
+`go run ./examples/http200` 用响应转换把业务错误改成 HTTP 200，业务码放在 JSON 里。`POST /orders` 的 `quantity` 不是整数时会 panic，Recovery 恢复成 500，服务端日志带时间戳和堆栈。同样监听 `127.0.0.1:8081`。
 
 `go run ./examples/openapi -format json` 不启动服务，把示例应用的 OpenAPI 打到标准输出。
 

@@ -8,7 +8,7 @@
 - `auth.go` 演示 JWT 解析、公开路由排除、授权回调、上下文注入和令牌刷新。
 - `handler.go` 包含强类型处理函数和 Response 辅助方法。
 - `websocket.go` 包含一个使用 HTTP Hijack 的原生 WebSocket 回显处理函数。
-- `errors.go` 演示公开错误、堆栈日志，以及带有 `method`、`path`、`rid`、`req`、`resp`、`code`、`error`、`cost` 字段的请求监控。
+- `errors.go` 演示如何返回业务错误、记录服务端调用栈，以及记录包含 `method`、`path`、`rid`、`req`、`resp`、`code`、`error`、`cost` 字段的请求日志。
 - `error_examples.go` 包含业务错误、带堆栈的内部错误、未知错误、panic 和 `http.ErrAbortHandler` 路由。
 - `access_filter.go` 演示按路由转换和排除访问日志。
 - `validation.go` 包含自定义校验规则。

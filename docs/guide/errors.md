@@ -10,9 +10,9 @@ type Problem struct {
 }
 ```
 
-## 公开错误
+## 返回业务错误
 
-`NewError` 创建一个可以返回给客户端的错误。
+需要让客户端看到明确的状态码和业务错误时，使用 `NewError`。它会同时设置 HTTP 状态码、应用错误码和客户端可见的说明。
 
 ```go
 type ReportRequest struct {
@@ -46,18 +46,18 @@ Content-Type: application/json; charset=utf-8
 
 `WithDetails` 返回带详情的副本。`HTTPStatus` 使用 400 到 599 的状态码。
 
-自己的错误类型实现这四个方法即可，效果和 `NewError` 相同：`HTTPStatus`、`ErrorCode`、`PublicMessage`、`ErrorDetails`。
+如果需要封装自己的业务错误类型，让它实现 `HTTPError` 即可。接口包含 `HTTPStatus`、`ErrorCode`、`PublicMessage` 和 `ErrorDetails` 四个方法。
 
 ## 默认映射
 
-| 返回的错误 | HTTP | 响应 |
-| --- | --- | --- |
-| `NewError(404, "report_not_found", "报表不存在")` | 404 | `code` 为 `report_not_found` |
-| 校验失败 | 400 | `code` 为 `validation_failed`，`details` 是字段列表 |
-| 请求体超过 `MaxBodyBytes` | 413 | `code` 为 `request_too_large` |
-| 不支持的 `Content-Type` | 415 | `code` 为 `unsupported_media_type` |
-| JSON 无法解码 | 400 | `code` 为 `invalid_request` |
-| `errorx.WithStack` 或其他未知错误 | 500 | `code` 为 `internal_error`，消息固定为 internal server error |
+| 返回的错误                                        | HTTP | 响应                                                         |
+| ------------------------------------------------- | ---- | ------------------------------------------------------------ |
+| `NewError(404, "report_not_found", "报表不存在")` | 404  | `code` 为 `report_not_found`                                 |
+| 校验失败                                          | 400  | `code` 为 `validation_failed`，`details` 是字段列表          |
+| 请求体超过 `MaxBodyBytes`                         | 413  | `code` 为 `request_too_large`                                |
+| 不支持的 `Content-Type`                           | 415  | `code` 为 `unsupported_media_type`                           |
+| JSON 无法解码                                     | 400  | `code` 为 `invalid_request`                                  |
+| 其他未知错误                                      | 500  | `code` 为 `internal_error`，消息固定为 internal server error |
 
 ## 自定义映射
 
@@ -92,9 +92,9 @@ HTTP/1.1 422 Unprocessable Entity
 {"code":"validation_failed","message":"request validation failed","details":[...]}
 ```
 
-## 堆栈
+## 记录服务端调用栈
 
-`errorx.WithStack` 在返回错误的位置保存调用栈，供日志使用。
+内部错误默认只返回统一的 `internal_error`，不会把错误详情发给客户端。需要在日志中定位错误时，可以用可选的 `ohmyhttp/errorx` 在返回错误的位置保存调用栈：
 
 ```go
 func LoadReport(ctx context.Context, request *ReportRequest) (*Report, error) {
@@ -106,16 +106,10 @@ func LoadReport(ctx context.Context, request *ReportRequest) (*Report, error) {
 }
 ```
 
-客户端仍收到：
-
-```json
-{"code":"internal_error","message":"internal server error"}
-```
-
-观察器里可以读到堆栈：
+客户端仍收到 `internal_error`，服务端日志可以读取调用栈：
 
 ```go
-ohmyhttp.WithErrorObserver(func(ctx context.Context, err error, response ohmyhttp.Response) {
+ohmyhttp.WithErrorObserver(func(_ context.Context, err error, response ohmyhttp.Response) {
 	if stack := errorx.StackTrace(err); stack != "" {
 		log.Printf("status=%d\n%s", response.Status, stack)
 	}

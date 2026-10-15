@@ -296,8 +296,8 @@ type ReportNotFoundError struct {
 }
 
 var (
-	_ error                = (*ReportNotFoundError)(nil)
-	_ ohmyhttp.PublicError = (*ReportNotFoundError)(nil)
+	_ error              = (*ReportNotFoundError)(nil)
+	_ ohmyhttp.HTTPError = (*ReportNotFoundError)(nil)
 )
 
 func (e *ReportNotFoundError) Error() string {
@@ -308,7 +308,7 @@ func (e *ReportNotFoundError) HTTPStatus() int { return http.StatusNotFound }
 
 func (e *ReportNotFoundError) ErrorCode() string { return "report_not_found" }
 
-func (e *ReportNotFoundError) PublicMessage() string { return "report does not exist" }
+func (e *ReportNotFoundError) ErrorMessage() string { return "report does not exist" }
 
 func (e *ReportNotFoundError) ErrorDetails() any {
 	return map[string]string{"report_id": e.ReportID}

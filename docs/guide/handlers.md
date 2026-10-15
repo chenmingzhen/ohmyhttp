@@ -28,7 +28,7 @@ app.Post("/users", CreateUser, ohmyhttp.Status(http.StatusCreated))
 - `ohmyhttp.Response`：使用其中的状态码、头和 Body。状态码为 0 时改用路由的成功状态码
 - `*ohmyhttp.Response`：同上。返回 `nil` 指针时，写出一个没有正文的成功状态码
 
-业务错误返回 `error`。默认不会把 `err.Error()` 写给客户端，除非这个错误实现了 `PublicError`。见 [错误处理](/guide/errors)。
+业务错误返回 `error`。默认不会把 `err.Error()` 写给客户端，除非这个错误实现了 `HTTPError`。见 [错误处理](/guide/errors)。
 
 ## ResponseFunc
 
