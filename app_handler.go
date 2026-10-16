@@ -70,5 +70,5 @@ func (app *App) createHTTPHandler() http.Handler {
 			routes,
 		)
 	}
-	return ChainMiddleware(handler, app.middleware...)
+	return chainMiddleware(handler, app.middleware...)
 }
