@@ -14,10 +14,22 @@ import (
 // 文件、重定向和流式响应。
 type defaultEncoder struct {
 	DescribedBy string
+
+	// protoJSON 只用于实现 proto.Message 的响应体。
+	// 普通结构体仍走 encoding/json，不受这里影响。
+	//
+	// 未调用 WithProtoJSON 时，这里是 UseProtoNames: true。
+	// WithProtoJSON 会把传入的 protojson.MarshalOptions 整组赋过来，
+	// 包括把 UseProtoNames 设回 false 的零值。
+	protoJSON protojson.MarshalOptions
 }
 
 func newDefaultEncoder() *defaultEncoder {
-	return &defaultEncoder{}
+	return &defaultEncoder{
+		// protojson 的零值把字段名写成 lowerCamelCase。未配置时改用 .proto
+		// 里的字段名，避免 user_id 被写成 userId。未赋值字段默认省略。
+		protoJSON: protojson.MarshalOptions{UseProtoNames: true},
+	}
 }
 
 func (e *defaultEncoder) Encode(
@@ -67,11 +79,10 @@ func (e *defaultEncoder) encodeJSON(
 		data []byte
 		err  error
 	)
-	// protobuf 类型
+	// protobuf message 不能交给 encoding/json。生成代码里的 json 标签只覆盖
+	// 一部分字段，enum、bytes、Timestamp 和字段是否出现都会和 protojson 不一致。
 	if message, ok := body.(proto.Message); ok {
-		data, err = (protojson.MarshalOptions{
-			UseProtoNames: true,
-		}).Marshal(message)
+		data, err = e.protoJSON.Marshal(message)
 	} else {
 		data, err = json.Marshal(body)
 	}

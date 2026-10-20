@@ -188,6 +188,5 @@ curl -F display_name=Ada -F avatar=@photo.png http://127.0.0.1:8080/users/42/ava
 ## 使用 protobuf 类型实现 HTTP/JSON 接口
 
 请求或响应类型实现 `proto.Message` 时，JSON 正文会使用 `protojson` 处理。
-未知字段默认拒绝，可通过 `WithDiscardUnknownFields(true)` 忽略。
 
 这表示使用 protobuf 类型实现 HTTP/JSON 接口。

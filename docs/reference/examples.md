@@ -46,7 +46,11 @@ JWT 保护 `GET /profile`、`PATCH /profile` 和 `GET /admin`。登录和其他�
 
 访问日志会按路由打码：`/tenants/*/login`、`/oauth/token`、`/sessions` 去掉 `password`，`/users` 再去掉 `confirm_password`。请求头和字段名里的 `access_token`、`refresh_token`、`authorization`、`token`、`secret` 也会被遮住。
 
-## 另外三个程序
+## 另外四个程序
+
+`go run ./examples/proto` 用 protobuf message 做 JSON 请求和响应，并注入 `protovalidate`。监听 `127.0.0.1:8082`。`POST /echo` 的正文是 `{"name":"Ada","message":"hello"}`。
+
+
 
 `go run ./examples/spa` 把前端嵌进二进制。`/api` 下找不到的路径返回 JSON，页面导航回退到 `index.html`，监听 `127.0.0.1:8081`。
 

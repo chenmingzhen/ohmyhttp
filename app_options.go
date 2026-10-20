@@ -3,6 +3,7 @@ package ohmyhttp
 import (
 	"context"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -66,9 +67,32 @@ func WithMethodNotAllowed(responseFunc MethodNotAllowedFunc) AppOption {
 }
 
 // WithDiscardUnknownFields 控制 JSON 请求体是否忽略未知字段。
+// 普通结构体和 protobuf message 都使用这个开关。它不改变响应编码。
 func WithDiscardUnknownFields(discard bool) AppOption {
 	return func(runtime *appRuntime) {
 		runtime.binder.discardUnknown = discard
+	}
+}
+
+// WithProtoJSON 用一组 protojson.MarshalOptions 替换 protobuf 响应的 JSON 编码选项。
+//
+// 未调用时，编码器使用 protojson.MarshalOptions{UseProtoNames: true}：
+// 字段名取 .proto 里的名字，未赋值字段省略，枚举写成常量名。
+//
+// 调用后整组替换，不再保留上面的默认值。protojson.MarshalOptions 的零值里
+// UseProtoNames 是 false，JSON 字段名会变成 lowerCamelCase。只想打开
+// EmitUnpopulated、同时继续使用 proto 字段名时，需要自己把 UseProtoNames 设为 true：
+//
+//	ohmyhttp.WithProtoJSON(protojson.MarshalOptions{
+//		UseProtoNames:   true,
+//		EmitUnpopulated: true,
+//	})
+//
+// 这个选项只影响实现 proto.Message 的响应。请求里的未知字段由
+// WithDiscardUnknownFields 控制。
+func WithProtoJSON(options protojson.MarshalOptions) AppOption {
+	return func(runtime *appRuntime) {
+		runtime.encoder.protoJSON = options
 	}
 }
 

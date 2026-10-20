@@ -11,6 +11,7 @@
 | `WithNotFound(ResponseFunc)` | 替换 JSON 404 |
 | `WithMethodNotAllowed(MethodNotAllowedFunc)` | 替换 JSON 405。未设置 `Allow` 时框架补上 |
 | `WithDescribedBy(url)` | 为框架写出的响应添加 `Link: <url>; rel="describedby"`，已有 `Link` 时不覆盖 |
+| `WithProtoJSON(protojson.MarshalOptions)` | 设置 protobuf 响应的 JSON 编码。见 [Protobuf](/guide/responses#protobuf) |
 | `WithRecovery()` | 恢复 panic，并走错误映射 |
 | `WithPanicMapper(PanicMapper)` | 恢复 panic，并用给定函数生成响应 |
 
@@ -28,6 +29,7 @@
 | --- | --- | --- |
 | `WithMaxBodyBytes(limit)` | 32 MiB | 应用级上限。设为 0 表示不限制。路由级 `MaxBodyBytes` 优先 |
 | `WithDiscardUnknownFields(bool)` | `false` | `false` 时拒绝 JSON 中的未知字段 |
+| `WithProtoValidator` | 不校验 | 只校验实现 `proto.Message` 的请求。普通结构体仍用 `validate` 标签 |
 | `WithMultipartMemory(memory)` | 8 MiB | multipart 解析留在内存中的最大字节数 |
 | `WithValidationRule(tag, rule, ...)` | | 注册 validator 字段规则 |
 

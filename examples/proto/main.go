@@ -62,6 +62,12 @@ func validateProtoRequest(
 }
 
 func newApp() *ohmyhttp.App {
+	// WithDiscardUnknownFields 只影响请求解码。未调用 WithProtoJSON 时，
+	// 响应使用 protojson.MarshalOptions{UseProtoNames: true}，并省略未赋值字段。
+	// 要写出零值且仍使用 proto 字段名时：
+	// ohmyhttp.WithProtoJSON(protojson.MarshalOptions{
+	//     UseProtoNames: true, EmitUnpopulated: true,
+	// })
 	app := ohmyhttp.New(
 		ohmyhttp.WithProtoValidator(validateProtoRequest),
 		ohmyhttp.WithDiscardUnknownFields(true),

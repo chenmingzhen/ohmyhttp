@@ -148,5 +148,4 @@ type CreateUserRequest struct {
 
 ## protobuf 校验
 
-protobuf 请求不使用 Go struct 的 `validate` 标签，而是通过
-`WithProtoValidator` 注入校验器。校验规则通常写在 `.proto` 中。
+protobuf 请求不使用 `validate` 标签。用 `WithProtoValidator` 注入校验器，规则写在 `.proto` 里。
