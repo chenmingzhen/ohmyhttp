@@ -57,7 +57,10 @@ Content-Type: application/json; charset=utf-8
 缺少 `Content-Type`，或媒体类型没有对应解码器时，响应是 415：
 
 ```json
-{"code":"unsupported_media_type","message":"unsupported Content-Type \"text/plain\""}
+{
+  "code": "unsupported_media_type",
+  "message": "unsupported Content-Type \"text/plain\""
+}
 ```
 
 ## 查询参数
@@ -89,7 +92,7 @@ app.Get("/reports", Search)
 请求 `GET /reports?status=queued&tag=finance&tag=monthly&page=2` 的响应：
 
 ```json
-{"status":"queued","tags":["finance","monthly"],"page":2}
+{ "status": "queued", "tags": ["finance", "monthly"], "page": 2 }
 ```
 
 切片接收重复参数。非切片字段收到重复参数时使用最后一个值。`*int` 收到 `"10"` 后指向 `10`。`bool` 接受 `true`、`false`、`1`、`0`。实现了 `encoding.TextUnmarshaler` 的类型用 `UnmarshalText` 解析。
@@ -127,7 +130,7 @@ grant_type=password&account=demo&password=password
 响应：
 
 ```json
-{"access_token":"tok_demo","token_type":"Bearer"}
+{ "access_token": "tok_demo", "token_type": "Bearer" }
 ```
 
 表单值来自 `PostForm`，查询参数不会混进来。
@@ -165,19 +168,27 @@ curl -F display_name=Ada -F avatar=@photo.png http://127.0.0.1:8080/users/42/ava
 ```
 
 ```json
-{"user_id":"42","file_name":"photo.png","size":2048}
+{ "user_id": "42", "file_name": "photo.png", "size": 2048 }
 ```
 
 小于 `WithMultipartMemory` 的部分留在内存，默认 8 MiB，超出部分写入临时文件。请求结束时临时文件会被删除。
 
 ## 来源标签
 
-| 标签 | 取值位置 |
-| --- | --- |
-| `json` | `Content-Type: application/json` 的正文 |
-| `form` | URL 编码表单或 multipart 的文本字段和文件 |
-| `query` | URL 查询参数 |
-| `header` | 请求头 |
-| `path` | 路径参数。路由里没有这个片段时为空 |
+| 标签     | 取值位置                                  |
+| -------- | ----------------------------------------- |
+| `json`   | `Content-Type: application/json` 的正文   |
+| `form`   | URL 编码表单或 multipart 的文本字段和文件 |
+| `query`  | URL 查询参数                              |
+| `header` | 请求头                                    |
+| `path`   | 路径参数。路由里没有这个片段时为空        |
 
 一个字段只声明一种来源。`"-"` 表示忽略。匿名嵌入字段会展开，命名的嵌套结构体会继续向下绑定。
+
+## 使用 protobuf 类型实现 HTTP/JSON 接口
+
+请求或响应类型实现 `proto.Message` 时，JSON 正文会使用 `protojson` 处理。
+未知字段默认拒绝，可通过 `WithDiscardUnknownFields(true)` 忽略。
+
+这表示使用 protobuf 类型实现 HTTP/JSON 接口。完整示例见
+[`examples/proto`](../../examples/proto)。

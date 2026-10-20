@@ -9,6 +9,9 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 // decodeRequestBody 根据 Content-Type 选择请求体解码方式，并把结果写入 input。
@@ -49,9 +52,24 @@ func (b *requestBinder) decodeJSONRequestBody(
 	if len(bytes.TrimSpace(data)) == 0 {
 		return nil
 	}
+	// 使用 protobuf 类型来实现 HTTP/JSON 接口
+	if message, ok := input.(proto.Message); ok {
+		return decodeProtoJSON(data, message, b.discardUnknown)
+	}
 
 	// encoding/json 接收一个指针，并直接给指针指向的字段赋值。
 	return decodeStrictJSON(data, input, b.discardUnknown)
+}
+
+// decodeProtoJSON 使用 protobuf 官方 JSON 映射解码请求体。protobuf message
+// 不能复用 encoding/json，否则 enum、bytes、Any、Timestamp 和字段 presence
+// 等语义都可能与 protobuf JSON 规范不一致。
+func decodeProtoJSON(data []byte, destination proto.Message, discardUnknown bool) error {
+	decoder := protojson.UnmarshalOptions{DiscardUnknown: discardUnknown}
+	if err := decoder.Unmarshal(data, destination); err != nil {
+		return fmt.Errorf("decode proto JSON: %w", err)
+	}
+	return nil
 }
 
 func decodeURLFormRequestBody(request *http.Request, input any) error {

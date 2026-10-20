@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+
+	"google.golang.org/protobuf/proto"
 )
 
 // bindRequestParameters 在 Request Body 解码之后，把 URL、Header 和路由中的
@@ -13,6 +15,11 @@ func bindRequestParameters(
 	requestBodyMediaType string,
 	input any,
 ) error {
+	// protobuf 字段由 protojson 按 protobuf descriptor 处理，不使用 Go
+	// struct 上的 query/path/header/form 标签。
+	if _, ok := input.(proto.Message); ok {
+		return nil
+	}
 	return bindStructParameters(
 		reflect.ValueOf(input),
 		request,

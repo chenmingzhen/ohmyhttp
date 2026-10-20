@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package ohmyhttp.examples.proto.v1;
+
+option go_package = "github.com/chenmingzhen/ohmyhttp/examples/proto/gen/demopb;demopb";
+
+import "buf/validate/validate.proto";
+
+message EchoRequest {
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string message = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.max_len = 200
+  ];
+}
+
+message EchoResponse {
+  string greeting = 1;
+  string message = 2;
+}

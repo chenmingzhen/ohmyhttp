@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 // defaultEncoder 把结构化响应编码为 JSON，并直接处理显式的文本、HTML、字节、
@@ -60,7 +63,18 @@ func (e *defaultEncoder) encodeJSON(
 	status int,
 	body any,
 ) error {
-	data, err := json.Marshal(body)
+	var (
+		data []byte
+		err  error
+	)
+	// protobuf 类型
+	if message, ok := body.(proto.Message); ok {
+		data, err = (protojson.MarshalOptions{
+			UseProtoNames: true,
+		}).Marshal(message)
+	} else {
+		data, err = json.Marshal(body)
+	}
 	if err != nil {
 		return fmt.Errorf("marshal JSON response: %w", err)
 	}

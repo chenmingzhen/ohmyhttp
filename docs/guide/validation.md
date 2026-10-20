@@ -47,7 +47,7 @@ X-User-ID: user-1
   "code": "validation_failed",
   "message": "request validation failed",
   "details": [
-    {"field": "profile.display_name", "rule": "min", "parameter": "2"}
+    { "field": "profile.display_name", "rule": "min", "parameter": "2" }
   ]
 }
 ```
@@ -57,7 +57,7 @@ X-User-ID: user-1
 同一请求把 `display_name` 改成 `"Ada"` 时，响应是：
 
 ```json
-{"user_id":"user-1","display_name":"Ada"}
+{ "user_id": "user-1", "display_name": "Ada" }
 ```
 
 `details` 里每一项是 `Violation`：`field` 是字段路径，`rule` 是规则名，`parameter` 是规则参数，`message` 可由 `NewValidationError` 自行填写。
@@ -145,3 +145,9 @@ type CreateUserRequest struct {
 `{"username":"1bad"}` 会返回 400，`rule` 为 `username`。`{"username":"ada"}` 通过这条规则。
 
 同一套 `validate` 标签会进入 OpenAPI Schema。见 [OpenAPI](/guide/openapi#schema)。
+
+## protobuf 校验
+
+protobuf 请求不使用 Go struct 的 `validate` 标签，而是通过
+`WithProtoValidator` 注入校验器。校验规则通常写在 `.proto` 中，完整示例见
+[`examples/proto`](../../examples/proto)。

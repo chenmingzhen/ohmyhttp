@@ -1,6 +1,6 @@
 # ohmyhttp
 
-[Go Reference][go-reference] · [Docs](https://chenmingzhen.github.io/ohmyhttp/) · [中文](README.md)
+[Docs](https://chenmingzhen.github.io/ohmyhttp/) · [中文](README.md)
 
 `ohmyhttp` is a type-safe HTTP application framework built directly on Go's `net/http`. It preserves the standard library's routing and Handler ecosystem while adding request binding, validation, error mapping, response encoding, and OpenAPI support.
 
@@ -12,6 +12,7 @@
 - Centralized error mapping, endpoint response transformation, and encoding
 - Request-level and endpoint-level middleware
 - Route groups and OpenAPI generation
+- Optional use of protobuf types for HTTP/JSON endpoints
 
 ## Installation
 

@@ -78,7 +78,7 @@ func (defaultErrorMapper) MapError(_ context.Context, err error) Response {
 	if errors.As(err, &binding) {
 		return JSON(http.StatusBadRequest, Problem{
 			Code:    "invalid_request",
-			Message: "request could not be decoded",
+			Message: "request could not be decoded", // binding.Error()
 		})
 	}
 

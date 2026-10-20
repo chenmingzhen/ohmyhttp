@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	playground "github.com/go-playground/validator/v10"
+	"google.golang.org/protobuf/proto"
 )
 
 // Violation 是适合通过 HTTP 传输的字段校验详情。
@@ -24,11 +25,16 @@ type RequestValidator interface {
 	ValidateRequest(context.Context) error
 }
 
+// ProtoValidator 是 protobuf 请求的可选校验器。框架不会默认引入某一种
+// protobuf 校验实现；业务方可以注入 protovalidate、protoc-gen-validate
+// 或自己的校验逻辑。
+type ProtoValidator func(context.Context, proto.Message) error
+
 // WithValidationRule 注册一个 go-playground/validator 字段级校验规则。
 // tag 写在请求字段的 validate 标签里，例如 validate:"required,username"。
 // rule 返回 true 表示这个字段通过。callValidationEvenIfNull 为 true 时，
 // 字段值是 nil 也会调用 rule；默认跳过 nil 字段。
-// 注册发生在构建 App 时，标签为空或注册失败会直接 panic，避免拖到第一笔请求。
+// 注册发生在构建 App 时，标签为空或注册失败会直接 panic。
 func WithValidationRule(
 	tag string,
 	rule playground.Func,
@@ -49,9 +55,11 @@ func WithValidationRule(
 	}
 }
 
-// defaultValidator 使用 go-playground/validator 和 `validate` 标签校验结构体。
+// defaultValidator 使用 go-playground/validator 和 `validate` 标签校验普通
+// 结构体；protobuf 请求则使用可选的 ProtoValidator。
 type defaultValidator struct {
-	structs *playground.Validate
+	structs        *playground.Validate
+	protoValidator ProtoValidator
 }
 
 func newDefaultValidator() *defaultValidator {
@@ -76,7 +84,14 @@ func newDefaultValidator() *defaultValidator {
 // 标签没通过就直接返回，不再调用 ValidateRequest，避免在缺字段的对象上做
 // 跨字段判断。标签通过后，请求结构如果实现了 RequestValidator，再执行它。
 func (v *defaultValidator) Validate(ctx context.Context, request any) error {
-	if err := v.structs.Struct(request); err != nil {
+	// 使用 protobuf 类型来实现的 HTTP/JSON 接口使用proto的校验器(即request和response是使用proto生成的)
+	if message, ok := request.(proto.Message); ok {
+		if v.protoValidator != nil {
+			if err := v.protoValidator(ctx, message); err != nil {
+				return err
+			}
+		}
+	} else if err := v.structs.Struct(request); err != nil {
 		return err
 	}
 

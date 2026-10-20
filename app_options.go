@@ -1,5 +1,11 @@
 package ohmyhttp
 
+import (
+	"context"
+
+	"google.golang.org/protobuf/proto"
+)
+
 // AppOption 配置 App 的请求处理能力。
 type AppOption func(*appRuntime)
 
@@ -7,6 +13,14 @@ type AppOption func(*appRuntime)
 func WithErrorMapper(mapper ErrorMapper) AppOption {
 	return func(runtime *appRuntime) {
 		runtime.errorMapper = mapper
+	}
+}
+
+// WithProtoValidator 设置 protobuf 请求的可选校验器。普通 struct 仍然
+// 使用 validator/v10；实现 proto.Message 的请求才会进入这个校验器。
+func WithProtoValidator(validator func(context.Context, proto.Message) error) AppOption {
+	return func(runtime *appRuntime) {
+		runtime.validator.protoValidator = validator
 	}
 }
 
