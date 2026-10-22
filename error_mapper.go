@@ -36,12 +36,6 @@ func (defaultErrorMapper) MapError(_ context.Context, err error) Response {
 	var httpError HTTPError
 	if errors.As(err, &httpError) {
 		status := httpError.HTTPStatus()
-		if status < 400 || status > 599 {
-			return JSON(http.StatusInternalServerError, Problem{
-				Code:    "internal_error",
-				Message: "internal server error",
-			})
-		}
 		return JSON(status, Problem{
 			Code:    httpError.ErrorCode(),
 			Message: httpError.ErrorMessage(),

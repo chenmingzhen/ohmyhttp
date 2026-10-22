@@ -6,7 +6,7 @@
 
 | 类型 | 何时产生 | 默认响应 |
 | --- | --- | --- |
-| `*Error` | `NewError`，实现 `HTTPError` | 声明的 4xx/5xx、`ErrorCode`、`PublicMessage`、`ErrorDetails` |
+| `*Error` | `NewError`，实现 `HTTPError` | 声明的 4xx/5xx、`ErrorCode`、`ErrorMessage`、`ErrorDetails` |
 | `*ValidationError` | 标签校验、`NewValidationError` | 400 `validation_failed`，`details` 为 `[]Violation` 或调用方给的详情 |
 | `*RequestBindingError` | JSON、表单、query、header、path 绑定失败 | 400 `invalid_request`。`Unwrap` 得到原因，原因不写入响应 |
 | `*UnsupportedMediaTypeError` | 有正文但没有可用解码器，或缺少 Content-Type | 415 `unsupported_media_type`。`Message` 使用该错误的 `Error()` |
@@ -24,12 +24,12 @@ type HTTPError interface {
 	error
 	HTTPStatus() int
 	ErrorCode() string
-	PublicMessage() string
+	ErrorMessage() string
 	ErrorDetails() any
 }
 ```
 
-`NewError(status, code, message)` 创建默认实现。`WithDetails` 返回带详情的浅拷贝。
+`NewError(status, message, opts...)` 创建默认实现。`code` 默认来自状态码，例如 400 是 `bad_request`。`WithCode` 用来覆盖，`WithDetails` 用来设置详情。
 
 ## Violation
 

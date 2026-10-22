@@ -134,8 +134,8 @@ func staticResponseFunc(fileSystem fs.FS, config staticConfig) ResponseFunc {
 		if !fs.ValidPath(name) {
 			return Response{}, NewError(
 				http.StatusNotFound,
-				"static_not_found",
 				"static resource does not exist",
+				WithCode("static_not_found"),
 			)
 		}
 
@@ -154,8 +154,8 @@ func staticResponseFunc(fileSystem fs.FS, config staticConfig) ResponseFunc {
 			if !config.directoryBrowse {
 				return Response{}, NewError(
 					http.StatusNotFound,
-					"static_not_found",
 					"static resource does not exist",
+					WithCode("static_not_found"),
 				)
 			}
 			return staticDirectoryResponse(request, fileSystem, name)
@@ -188,8 +188,8 @@ func staticMissingResponse(
 	}
 	return Response{}, NewError(
 		http.StatusNotFound,
-		"static_not_found",
 		"static resource does not exist",
+		WithCode("static_not_found"),
 	)
 }
 

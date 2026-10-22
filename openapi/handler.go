@@ -59,8 +59,8 @@ func SchemasHandler(source EndpointSource, options ...Option) ohmyhttp.ResponseF
 			if !ok {
 				return ohmyhttp.Response{}, ohmyhttp.NewError(
 					http.StatusNotFound,
-					"schema_not_found",
 					"schema does not exist",
+					ohmyhttp.WithCode("schema_not_found"),
 				)
 			}
 			value = schema

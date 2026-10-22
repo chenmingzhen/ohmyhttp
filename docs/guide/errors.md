@@ -15,27 +15,18 @@ type Problem struct {
 需要让客户端看到明确的状态码和业务错误时，使用 `NewError`。它会同时设置 HTTP 状态码、应用错误码和客户端可见的说明。
 
 ```go
-type ReportRequest struct {
-	ID string `path:"id" validate:"required"`
-}
-
-type Report struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
 func GetReport(_ context.Context, request *ReportRequest) (*Report, error) {
 	if request.ID != "monthly" {
-		return nil, ohmyhttp.NewError(http.StatusNotFound, "report_not_found", "报表不存在").
-			WithDetails(map[string]string{"id": request.ID})
+		return nil, ohmyhttp.NewError(http.StatusNotFound, "报表不存在",
+			ohmyhttp.WithCode("report_not_found"),
+			ohmyhttp.WithDetails(map[string]string{"id": request.ID}),
+		)
 	}
 	return &Report{ID: request.ID, Name: "Monthly"}, nil
 }
-
-app.Get("/reports/{id}", GetReport)
 ```
 
-`GET /reports/missing` 的响应：
+自定义错误实现 `HTTPError` 即可。
 
 ```http
 HTTP/1.1 404 Not Found
@@ -44,20 +35,16 @@ Content-Type: application/json; charset=utf-8
 {"code":"report_not_found","message":"报表不存在","details":{"id":"missing"}}
 ```
 
-`WithDetails` 返回带详情的副本。`HTTPStatus` 使用 400 到 599 的状态码。
-
-如果需要封装自己的业务错误类型，让它实现 `HTTPError` 即可。接口包含 `HTTPStatus`、`ErrorCode`、`PublicMessage` 和 `ErrorDetails` 四个方法。
-
 ## 默认映射
 
-| 返回的错误                                        | HTTP | 响应                                                         |
-| ------------------------------------------------- | ---- | ------------------------------------------------------------ |
-| `NewError(404, "report_not_found", "报表不存在")` | 404  | `code` 为 `report_not_found`                                 |
-| 校验失败                                          | 400  | `code` 为 `validation_failed`，`details` 是字段列表          |
-| 请求体超过 `MaxBodyBytes`                         | 413  | `code` 为 `request_too_large`                                |
-| 不支持的 `Content-Type`                           | 415  | `code` 为 `unsupported_media_type`                           |
-| JSON 无法解码                                     | 400  | `code` 为 `invalid_request`                                  |
-| 其他未知错误                                      | 500  | `code` 为 `internal_error`，消息固定为 internal server error |
+| 返回的错误                | HTTP           | 响应                                                         |
+| ------------------------- | -------------- | ------------------------------------------------------------ |
+| `NewError`                | 传入的 4xx/5xx | `code` 默认来自状态码，`WithCode` 可覆盖                     |
+| 校验失败                  | 400            | `code` 为 `validation_failed`，`details` 是字段列表          |
+| 请求体超过 `MaxBodyBytes` | 413            | `code` 为 `request_too_large`                                |
+| 不支持的 `Content-Type`   | 415            | `code` 为 `unsupported_media_type`                           |
+| JSON 无法解码             | 400            | `code` 为 `invalid_request`                                  |
+| 其他未知错误              | 500            | `code` 为 `internal_error`，消息固定为 internal server error |
 
 ## 自定义映射
 

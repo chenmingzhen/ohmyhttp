@@ -54,10 +54,10 @@ type EndpointMiddleware func(*EndpointContext, EndpointNext) (Response, error)
 func RequireUser(ctx *ohmyhttp.EndpointContext, next ohmyhttp.EndpointNext) (ohmyhttp.Response, error) {
 	user, ok := ctx.Request.Context().Value(userKey{}).(User)
 	if !ok {
-		return ohmyhttp.Response{}, ohmyhttp.NewError(http.StatusUnauthorized, "unauthenticated", "未登录")
+		return ohmyhttp.Response{}, ohmyhttp.NewError(http.StatusUnauthorized, "未登录", ohmyhttp.WithCode("unauthenticated"))
 	}
 	if user.Role != "admin" && ctx.Route.Pattern == "/admin" {
-		return ohmyhttp.Response{}, ohmyhttp.NewError(http.StatusForbidden, "forbidden", "权限不足")
+		return ohmyhttp.Response{}, ohmyhttp.NewError(http.StatusForbidden, "权限不足")
 	}
 	return next(ctx)
 }

@@ -3,6 +3,7 @@ package ohmyhttp
 import (
 	"errors"
 	"fmt"
+	"net/http"
 )
 
 // 本文件定义进入 HTTP 响应的错误。怎么把它们写成响应，见 error_mapper.go。
@@ -41,26 +42,98 @@ type Error struct {
 
 var _ HTTPError = (*Error)(nil)
 
-// NewError 创建分别包含 HTTP 状态码和应用错误码的错误。
-func NewError(status int, code string, message string) *Error {
-	return &Error{status: status, code: code, message: message}
+// ErrorOption 设置 NewError 的可选项。
+type ErrorOption func(*Error)
+
+// NewError 创建包含 HTTP 状态码和客户端说明的错误。
+// 错误码默认由状态码决定，例如 404 是 not_found，400 是 bad_request。
+func NewError(status int, message string, opts ...ErrorOption) *Error {
+	err := &Error{
+		status:  status,
+		code:    defaultErrorCode(status),
+		message: message,
+	}
+
+	if status < 400 || status > 599 {
+		err.status = http.StatusInternalServerError
+		err.message = "internal server error"
+		err.code = defaultErrorCode(http.StatusInternalServerError)
+
+		return err
+	}
+
+	for _, opt := range opts {
+		if opt != nil {
+			opt(err)
+		}
+	}
+	return err
 }
 
-// WithDetails 返回包含结构化公开详情的浅拷贝。
-func (e *Error) WithDetails(details any) *Error {
-	copy := *e
-	copy.details = details
-	return &copy
+// WithCode 覆盖默认错误码。空字符串会被忽略。
+func WithCode(code string) ErrorOption {
+	return func(err *Error) {
+		if err == nil || code == "" {
+			return
+		}
+		err.code = code
+	}
+}
+
+// WithDetails 设置返回给客户端的结构化详情。
+func WithDetails(details any) ErrorOption {
+	return func(err *Error) {
+		if err == nil {
+			return
+		}
+		err.details = details
+	}
 }
 
 func (e *Error) Error() string {
 	return e.message
 }
 
-func (e *Error) HTTPStatus() int      { return e.status }
-func (e *Error) ErrorCode() string    { return e.code }
+func (e *Error) HTTPStatus() int { return e.status }
+
+func (e *Error) ErrorCode() string {
+	if e.code != "" {
+		return e.code
+	}
+	return defaultErrorCode(e.status)
+}
+
 func (e *Error) ErrorMessage() string { return e.message }
 func (e *Error) ErrorDetails() any    { return e.details }
+
+func defaultErrorCode(status int) string {
+	switch status {
+	case http.StatusBadRequest:
+		return "bad_request"
+	case http.StatusUnauthorized:
+		return "unauthorized"
+	case http.StatusForbidden:
+		return "forbidden"
+	case http.StatusNotFound:
+		return "not_found"
+	case http.StatusMethodNotAllowed:
+		return "method_not_allowed"
+	case http.StatusConflict:
+		return "conflict"
+	case http.StatusRequestEntityTooLarge:
+		return "request_too_large"
+	case http.StatusUnsupportedMediaType:
+		return "unsupported_media_type"
+	case http.StatusUnprocessableEntity:
+		return "unprocessable_entity"
+	case http.StatusTooManyRequests:
+		return "too_many_requests"
+	case http.StatusInternalServerError:
+		return "internal_error"
+	default:
+		return fmt.Sprintf("http_%d", status)
+	}
+}
 
 // RequestBindingError 标记 HTTP 请求绑定过程中产生的错误。
 type RequestBindingError struct {

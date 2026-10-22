@@ -283,8 +283,8 @@ func (*Handler) Login(
 	if !exists || request.Password != "password" {
 		return nil, ohmyhttp.NewError(
 			http.StatusUnauthorized,
-			"invalid_credentials",
 			"account or password is invalid",
+			ohmyhttp.WithCode("invalid_credentials"),
 		)
 	}
 	token, err := issueDemoToken(User{Name: request.Account, Role: role}, 2*time.Hour)
@@ -302,15 +302,15 @@ func (*Handler) IssueOAuthToken(
 		(request.Account != "demo" || request.Password != "password") {
 		return nil, ohmyhttp.NewError(
 			http.StatusUnauthorized,
-			"invalid_credentials",
 			"account or password is invalid",
+			ohmyhttp.WithCode("invalid_credentials"),
 		)
 	}
 	if request.GrantType == "refresh_token" && request.RefreshToken != "refresh-token" {
 		return nil, ohmyhttp.NewError(
 			http.StatusUnauthorized,
-			"invalid_refresh_token",
 			"refresh token is invalid",
+			ohmyhttp.WithCode("invalid_refresh_token"),
 		)
 	}
 	return &OAuthTokenResponse{
@@ -328,8 +328,8 @@ func (*Handler) CreateSession(
 	if request.Account != "demo" || request.Password != "password" {
 		return ohmyhttp.Response{}, ohmyhttp.NewError(
 			http.StatusUnauthorized,
-			"invalid_credentials",
 			"account or password is invalid",
+			ohmyhttp.WithCode("invalid_credentials"),
 		)
 	}
 	return ohmyhttp.JSON(
@@ -437,8 +437,8 @@ func (*Handler) Admin(
 	if UserFromContext(ctx).Role != "admin" {
 		return nil, ohmyhttp.NewError(
 			http.StatusForbidden,
-			"permission_denied",
 			"admin role is required",
+			ohmyhttp.WithCode("permission_denied"),
 		)
 	}
 	return &AdminResponse{Message: "welcome, admin"}, nil
@@ -577,8 +577,8 @@ func checkReportAccess(reportID ReportID) error {
 	case "secret":
 		return ohmyhttp.NewError(
 			http.StatusForbidden,
-			"permission_denied",
 			"report is forbidden",
+			ohmyhttp.WithCode("permission_denied"),
 		)
 	default:
 		return newReportNotFound(string(reportID))

@@ -18,13 +18,12 @@ func (*Handler) BusinessError(
 	context.Context,
 	*EmptyRequest,
 ) (*ErrorExampleResponse, error) {
-	return nil, ohmyhttp.NewError(
-		http.StatusConflict,
-		"order_conflict",
-		"order cannot be submitted twice",
-	).WithDetails(map[string]string{
-		"order_id": "order-1001",
-	})
+	return nil, ohmyhttp.NewError(http.StatusConflict, "order cannot be submitted twice",
+		ohmyhttp.WithCode("order_conflict"),
+		ohmyhttp.WithDetails(map[string]string{
+			"order_id": "order-1001",
+		}),
+	)
 }
 
 func (*Handler) StackError(
