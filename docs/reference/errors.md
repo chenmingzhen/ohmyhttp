@@ -1,6 +1,6 @@
 # 错误类型
 
-端点返回的错误会被转换为 HTTP 响应。客户端看到的是状态码和 `Problem`；普通 `error` 的 `Error()` 默认不会直接写入响应。
+端点返回的错误由 `DefaultMapError` 分类后写成响应。默认正文是 `Problem`。普通 `error` 的 `Error()` 默认不会直接写入响应。
 
 ## 内置错误
 

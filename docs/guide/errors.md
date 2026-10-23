@@ -46,9 +46,22 @@ Content-Type: application/json; charset=utf-8
 | JSON 无法解码             | 400            | `code` 为 `invalid_request`                                  |
 | 其他未知错误              | 500            | `code` 为 `internal_error`，消息固定为 internal server error |
 
+## 更换 JSON 格式
+
+`DefaultMapError` 判断错误类型。`bodyMapper` 决定响应里写出哪些字段。
+
+```go
+return ohmyhttp.DefaultMapError(err, func(info ohmyhttp.ErrorInfo) any {
+	return map[string]any{
+		"code":    info.Status,
+		"message": info.Message,
+	}
+})
+```
+
 ## 自定义映射
 
-下面把校验失败改成 422，其他错误仍是 500。
+校验失败改成 422，其余仍按默认分类写成 `Problem`。
 
 ```go
 type mapper struct{}
@@ -62,10 +75,7 @@ func (mapper) MapError(_ context.Context, err error) ohmyhttp.Response {
 			Details: validation.Details,
 		})
 	}
-	return ohmyhttp.JSON(http.StatusInternalServerError, ohmyhttp.Problem{
-		Code:    "internal_error",
-		Message: "internal server error",
-	})
+	return ohmyhttp.DefaultMapError(err,nil)
 }
 
 app := ohmyhttp.New(ohmyhttp.WithErrorMapper(mapper{}))

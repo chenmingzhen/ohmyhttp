@@ -10,10 +10,12 @@ import (
 // AppOption 配置 App 的请求处理能力。
 type AppOption func(*appRuntime)
 
-// WithErrorMapper 将错误转换为框架的 Response
+// WithErrorMapper 替换默认错误映射。
 func WithErrorMapper(mapper ErrorMapper) AppOption {
 	return func(runtime *appRuntime) {
-		runtime.errorMapper = mapper
+		if mapper != nil {
+			runtime.errorMapper = mapper
+		}
 	}
 }
 

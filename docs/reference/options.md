@@ -6,7 +6,7 @@
 
 | 选项 | 作用 |
 | --- | --- |
-| `WithErrorMapper(ErrorMapper)` | 替换默认错误映射 |
+| `WithErrorMapper(ErrorMapper)` | 替换默认错误映射。可用 `DefaultMapError` 复用分类 |
 | `WithEndpointResponseTransformer` | 编码前转换强类型端点的结构化响应 |
 | `WithNotFound(ResponseFunc)` | 替换 JSON 404 |
 | `WithMethodNotAllowed(MethodNotAllowedFunc)` | 替换 JSON 405。未设置 `Allow` 时框架补上 |

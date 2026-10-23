@@ -28,7 +28,6 @@ func newAppRuntime(options ...AppOption) *appRuntime {
 		binder:       newRequestBinder(defaultMultipartMemory),
 		validator:    newDefaultValidator(),
 		encoder:      newDefaultEncoder(),
-		errorMapper:  defaultErrorMapper{},
 		maxBodyBytes: defaultMaxBodyBytes,
 		environment:  EnvProduction,
 	}
