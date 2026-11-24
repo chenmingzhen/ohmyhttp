@@ -60,7 +60,26 @@ X-User-ID: user-1
 { "user_id": "user-1", "display_name": "Ada" }
 ```
 
-`details` 里每一项是 `Violation`：`field` 是字段路径，`rule` 是规则名，`parameter` 是规则参数，`message` 可由 `NewValidationError` 自行填写。
+`details` 里每一项是 `Violation`，其中 `field` 是字段路径，`rule` 是规则名，`parameter` 是规则参数，`message` 是可选的提示。
+
+### 自定义字段提示
+
+在请求字段上用 `msg` 设置默认提示，用 `msg_<规则名>` 为某条规则单独设置提示。框架优先取失败规则的非空提示，再取 `msg`。两者都为空时，响应详情省略 `message`。
+
+示例服务的登录密码使用了这两个标签。
+
+```go
+Password string `json:"password" validate:"required,min=8" msg:"密码至少需要 8 个字符" msg_required:"密码不能为空"`
+```
+
+运行 `go run ./examples/server` 后，按下表分别向 `POST /tenants/1/login` 发送 JSON 请求。两个请求都返回 HTTP 400。
+
+| 请求体 | 响应中的 `details[0]` |
+| --- | --- |
+| `{"account":"demo","password":""}` | `{"field":"password","rule":"required","message":"密码不能为空"}` |
+| `{"account":"demo","password":"abc"}` | `{"field":"password","rule":"min","parameter":"8","message":"密码至少需要 8 个字符"}` |
+
+使用 `dive` 时，元素自身的错误读取集合字段的提示，元素内部的字段读取自己的提示。若不同的 map 项产生相同的校验路径且文案有歧义，详情中省略 `message`。
 
 ## 跨字段校验
 

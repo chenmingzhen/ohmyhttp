@@ -92,7 +92,7 @@ func (v *defaultValidator) Validate(ctx context.Context, request any) error {
 			}
 		}
 	} else if err := v.structs.Struct(request); err != nil {
-		return err
+		return NewValidationError(err, validationDetails(request, err))
 	}
 
 	if validator, ok := request.(RequestValidator); ok {
@@ -109,21 +109,31 @@ func (v *defaultValidator) Validate(ctx context.Context, request any) error {
 // Parameter 是规则参数，如 min=8 里的 8。Namespace 形如
 // "UpdateProfileRequest.profile.display_name"，第一段是 Go 结构体名，对客户端
 // 没有意义，所以去掉。
-func validationDetails(err error) any {
+func validationDetails(request any, err error) any {
 	var structViolations playground.ValidationErrors
-	if errors.As(err, &structViolations) {
-		details := make([]Violation, 0, len(structViolations))
-		for _, violation := range structViolations {
-			details = append(details, Violation{
-				Field:     trimRootNamespace(violation.Namespace()),
-				Rule:      violation.Tag(),
-				Parameter: violation.Param(),
-			})
-		}
-		return details
+	if !errors.As(err, &structViolations) {
+		return nil
 	}
 
-	return nil
+	rootType := dereferenceType(reflect.TypeOf(request))
+	details := make([]Violation, len(structViolations))
+	for i, violation := range structViolations {
+		field := violation.Namespace()
+		if rootType == nil {
+			field = trimRootNamespace(field)
+		} else if rootType.Name() != "" {
+			field = strings.TrimPrefix(field, rootType.Name()+".")
+		}
+		details[i] = Violation{
+			Field:     field,
+			Rule:      violation.Tag(),
+			Parameter: violation.Param(),
+		}
+	}
+	if rootType != nil {
+		setValidationMessages(request, rootType.Name(), structViolations, details)
+	}
+	return details
 }
 
 // normalizeValidationError 把校验失败统一成 *ValidationError。
@@ -136,7 +146,7 @@ func normalizeValidationError(err error) *ValidationError {
 	}
 	return &ValidationError{
 		Cause:   err,
-		Details: validationDetails(err),
+		Details: validationDetails(nil, err),
 	}
 }
 

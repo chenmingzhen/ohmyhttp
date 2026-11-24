@@ -19,7 +19,7 @@ import (
 type LoginRequest struct {
 	TenantID int    `path:"tenant_id" validate:"required,gt=0"`
 	Account  string `                 validate:"required"       json:"account"`
-	Password string `                 validate:"required,min=8" json:"password"`
+	Password string `                 validate:"required,min=8" json:"password" msg:"密码至少需要 8 个字符" msg_required:"密码不能为空"`
 }
 
 type LoginResponse struct {
