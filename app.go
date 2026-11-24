@@ -1,6 +1,9 @@
 package ohmyhttp
 
-import "net/http"
+import (
+	"net/http"
+	"sync"
+)
 
 // App 是直接构建在 net/http 上的强类型 HTTP 应用
 type App struct {
@@ -14,6 +17,8 @@ type App struct {
 	endpointMiddleware []EndpointMiddleware
 
 	httpHandler http.Handler
+
+	handlerOnce sync.Once
 }
 
 var _ http.Handler = (*App)(nil)
@@ -58,9 +63,13 @@ func (app *App) HandleResponse(
 
 // ServeHTTP 实现 http.Handler。
 func (app *App) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	if app.httpHandler == nil {
-		app.httpHandler = app.createHTTPHandler()
-	}
+	app.handlerOnce.Do(func() {
+		// 并发保护，如果服务启动后的前两个请求同时到达，就可能同时写这个字段，产生数据竞争
+		if app.httpHandler == nil {
+			app.httpHandler = app.createHTTPHandler()
+		}
+	})
+
 	tracked := &trackedResponseWriter{ResponseWriter: writer}
 	app.httpHandler.ServeHTTP(tracked, request)
 }
